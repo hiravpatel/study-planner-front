@@ -16,16 +16,17 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5000000,
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
-      manifest: {
-        name: 'Medical Student Study Planner',
-        short_name: 'StudyPlanner',
-        description: 'Manage study schedules, tasks, and spaced repetition.',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        scope: '/',
-        start_url: '/',
-        orientation: 'portrait',
+manifest: {
+  id: '/',
+  name: 'Medical Student Study Planner',
+  short_name: 'StudyPlanner',
+  description: 'Manage study schedules, tasks, and spaced repetition.',
+  theme_color: '#ffffff',
+  background_color: '#ffffff',
+  display: 'standalone',
+  scope: '/',
+  start_url: '/',
+  orientation: 'portrait',
         icons: [
           {
             src: 'pwa-192x192.png',
