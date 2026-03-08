@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { Activity, Play, TrendingUp, CheckCircle, BarChart3 } from 'lucide-react';
 
 interface DashboardStats {
   completedTasksCount: number;
@@ -29,12 +30,18 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Overview</h2>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary-100 rounded-xl text-primary-600">
+            <Activity size={24} />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Overview</h2>
+        </div>
         <div className="flex space-x-2">
-           <Link to="/pomodoro" className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium text-sm hover:bg-primary-700 shadow-sm transition-colors">
-              Start Pomodoro
+           <Link to="/pomodoro" className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm shadow-md hover:bg-primary-700 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
+              <Play fill="currentColor" size={16} />
+              Start Session
            </Link>
         </div>
       </div>
@@ -42,28 +49,34 @@ export default function Dashboard() {
       {loading ? (
         <div className="h-40 flex items-center justify-center text-slate-400">Loading your stats...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
-             <h3 className="text-slate-500 font-medium text-sm">Tasks Due Today</h3>
-             <div className="mt-2 flex items-baseline gap-2">
-               <span className="text-4xl font-extrabold text-slate-800">{stats?.tasksToday || 0}</span>
-               <span className="text-sm font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Pending</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow border border-slate-100/50 flex flex-col justify-center relative overflow-hidden group">
+             <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+               <TrendingUp size={100} />
+             </div>
+             <h3 className="text-slate-500 font-bold text-xs uppercase tracking-wider">Tasks Due Today</h3>
+             <div className="mt-3 flex items-baseline gap-2">
+               <span className="text-5xl font-black text-slate-800 tracking-tighter">{stats?.tasksToday || 0}</span>
+               <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wide">Pending</span>
              </div>
           </div>
           
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
-             <h3 className="text-slate-500 font-medium text-sm">Completed Tasks</h3>
-             <div className="mt-2 flex items-baseline gap-2">
-               <span className="text-4xl font-extrabold text-slate-800">{stats?.completedTasksCount || 0}</span>
-               <span className="text-sm font-medium text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">Total</span>
+          <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow border border-slate-100/50 flex flex-col justify-center relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+               <CheckCircle size={100} />
+             </div>
+             <h3 className="text-slate-500 font-bold text-xs uppercase tracking-wider">Completed Tasks</h3>
+             <div className="mt-3 flex items-baseline gap-2">
+               <span className="text-5xl font-black text-slate-800 tracking-tighter">{stats?.completedTasksCount || 0}</span>
+               <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wide">Total</span>
              </div>
           </div>
 
-          <div className="bg-primary-50 p-6 rounded-2xl shadow-sm border border-primary-100 flex flex-col justify-center">
-             <h3 className="text-primary-700 font-semibold text-sm">Total Study Time</h3>
-             <div className="mt-2 flex items-baseline gap-2">
-               <span className="text-4xl font-extrabold text-primary-700">
-                 {Math.floor((stats?.totalStudyMinutes || 0) / 60)}<span className="text-xl">h</span> {(stats?.totalStudyMinutes || 0) % 60}<span className="text-xl">m</span>
+          <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow border border-primary-200/50 flex flex-col justify-center relative overflow-hidden">
+             <h3 className="text-primary-800 font-bold text-xs uppercase tracking-wider">Total Study Time</h3>
+             <div className="mt-3 flex items-baseline gap-2">
+               <span className="text-5xl font-black text-primary-700 tracking-tighter">
+                 {Math.floor((stats?.totalStudyMinutes || 0) / 60)}<span className="text-2xl font-bold ml-1 text-primary-600">h</span> {(stats?.totalStudyMinutes || 0) % 60}<span className="text-2xl font-bold ml-1 text-primary-600">m</span>
                </span>
              </div>
           </div>
@@ -71,10 +84,13 @@ export default function Dashboard() {
       )}
 
       {/* Placeholder for Subject Charts - To be implemented using Recharts or similar */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[300px]">
-         <h3 className="text-lg font-semibold text-slate-800 mb-4">Study Hours by Subject</h3>
+      <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 min-h-[300px]">
+         <div className="flex items-center gap-2 mb-6">
+           <BarChart3 className="text-slate-400" size={20} />
+           <h3 className="text-lg font-bold text-slate-800">Study Hours by Subject</h3>
+         </div>
          {stats?.subjectStats && stats.subjectStats.length > 0 ? (
-           <div className="space-y-4">
+           <div className="space-y-5">
              {stats.subjectStats.map((stat, idx) => (
                <div key={idx} className="flex items-center">
                  <div className="w-32 text-sm font-medium text-slate-700 pr-4 truncate" title={stat.subjectName}>{stat.subjectName}</div>

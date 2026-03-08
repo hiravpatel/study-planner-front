@@ -25,7 +25,7 @@ export default function Layout() {
 
   // Nav styles for Mobile Bottom Tab-Bar
   const mobileNavLinkClasses = ({ isActive }: { isActive: boolean }) => 
-    `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
+    `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all active:scale-95 ${
       isActive 
       ? 'text-primary-600' 
       : 'text-slate-400 hover:text-slate-600'
@@ -107,7 +107,7 @@ export default function Layout() {
       </aside>
 
       {/* --- MOBILE TOP HEADER --- */}
-      <header className="md:hidden fixed top-0 w-full left-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between z-40">
+      <header className="md:hidden fixed top-0 w-full left-0 bg-white/90 backdrop-blur-md border-b border-slate-200/50 p-4 flex items-center justify-between z-40 shadow-sm">
         <div className="flex items-center space-x-2">
             <BookOpen className="w-6 h-6 text-primary-600" />
             <h1 className="text-lg font-bold text-slate-900">StudyPlanner</h1>
@@ -130,7 +130,7 @@ export default function Layout() {
       </main>
 
       {/* --- MOBILE BOTTOM TAB NAV --- */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[72px] bg-white border-t border-slate-200 z-50 flex items-center justify-around px-2 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-[72px] bg-white/90 backdrop-blur-md border-t border-slate-200/50 z-50 flex items-center justify-around px-2 pb-safe shadow-[0_-8px_20px_-1px_rgba(0,0,0,0.03)] selection:bg-transparent">
          <NavLink to="/" className={mobileNavLinkClasses} end>
             {({ isActive }) => (
               <>
