@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import { Activity, Play, TrendingUp, CheckCircle, BarChart3 } from 'lucide-react';
+import { Activity, Play, TrendingUp, CheckCircle, BarChart3, Download, Lightbulb } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 interface DashboardStats {
   completedTasksCount: number;
@@ -12,13 +16,19 @@ interface DashboardStats {
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get('/analytics/dashboard');
-        setStats(response.data);
+        const [dashboardRes, weeklyRes] = await Promise.all([
+          api.get('/analytics/dashboard'),
+          api.get('/analytics/weekly')
+        ]);
+        setStats(dashboardRes.data);
+        setWeeklyData(weeklyRes.data.dailyStats);
       } catch (error) {
         console.error('Failed to load dashboard stats', error);
       } finally {
@@ -29,17 +39,89 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
+  const handleDownloadPDF = async () => {
+    try {
+      setDownloading(true);
+      
+      const dashboardElement = document.getElementById('dashboard-report-content');
+      if (!dashboardElement) return;
+
+      const canvas = await html2canvas(dashboardElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f8fafc', 
+        windowWidth: 1024 // Force desktop view structure for the printed PDF
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Study-Report-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast.success('Report downloaded successfully!');
+    } catch (error) {
+      console.error('Download PDF error:', error);
+      toast.error('Failed to generate PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Generate Insight Message based on weekly data
+  const getInsights = () => {
+    if (!weeklyData || weeklyData.length === 0) return null;
+    
+    let totalCompleted = 0;
+    let totalPending = 0;
+    
+    weeklyData.forEach(day => {
+       totalCompleted += day.completed;
+       totalPending += day.pending;
+    });
+
+    const total = totalCompleted + totalPending;
+    if (total === 0) return { message: "It looks like you haven't scheduled any tasks this week. Create some goals in your Planner!", color: "text-slate-500", bg: "bg-slate-50 border-slate-200" };
+
+    const ratio = totalCompleted / total;
+    if (ratio > 0.8) {
+       return { message: "Outstanding! You're completing over 80% of your planned tasks. Keep up the phenomenal momentum! 🚀", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" };
+    } else if (ratio > 0.5) {
+       return { message: "Good progress! Consider breaking larger tasks into smaller chunks or adjusting your 'Carry Over' habits to boost your completion rate.", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
+    } else {
+       return { message: "You're accumulating a lot of pending tasks. Try reducing your daily load and focusing on completing just 1-2 high-priority tasks a day. Consistency > Volume.", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" };
+    }
+  };
+
+  const insight = getInsights();
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+      <div id="dashboard-report-content" className="space-y-8 bg-slate-50 p-4 md:p-6 -mx-4 md:-m-6 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary-100 rounded-xl text-primary-600">
+          <div className="p-2 bg-primary-100 rounded-xl text-primary-600 shrink-0">
             <Activity size={24} />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Overview</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Overview</h2>
         </div>
-        <div className="flex space-x-2">
-           <Link to="/pomodoro" className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm shadow-md hover:bg-primary-700 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2">
+           <button 
+             onClick={handleDownloadPDF} 
+             disabled={downloading}
+             className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+           >
+             <Download size={16} className={downloading ? "animate-bounce" : ""} />
+             {downloading ? 'Generating...' : 'Download Report'}
+           </button>
+           <Link to="/pomodoro" className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-primary-700 hover:shadow-lg transition-all active:scale-95 whitespace-nowrap">
               <Play fill="currentColor" size={16} />
               Start Session
            </Link>
@@ -83,6 +165,39 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Weekly Achievements Chart */}
+      {!loading && weeklyData.length > 0 && (
+        <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 h-[400px] flex flex-col">
+          <div className="flex items-center gap-2 mb-6">
+            <BarChart3 className="text-primary-500" size={20} />
+            <h3 className="text-lg font-bold text-slate-800">Weekly Achievements</h3>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(val: string) => new Date(val).toLocaleDateString('en-US', { weekday: 'short' })} 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#64748b', fontSize: 12 }} 
+                  dy={10}
+                />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                <Bar dataKey="completed" name="Completed Tasks" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} barSize={32} />
+                <Bar dataKey="pending" name="Pending Tasks" stackId="a" fill="#cbd5e1" radius={[4, 4, 0, 0]} barSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       {/* Placeholder for Subject Charts - To be implemented using Recharts or similar */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 min-h-[300px]">
          <div className="flex items-center gap-2 mb-6">
@@ -115,6 +230,21 @@ export default function Dashboard() {
            </div>
          )}
       </div>
+
+      {/* AI / Automated Weekly Insights */}
+      {insight && (
+        <div className={`p-6 rounded-3xl border shadow-sm flex items-start gap-4 ${insight.bg}`}>
+           <div className="p-3 bg-white rounded-full shrink-0 shadow-sm">
+             <Lightbulb className={`w-6 h-6 ${insight.color}`} />
+           </div>
+           <div>
+             <h3 className={`font-bold text-lg mb-1 ${insight.color}`}>Weekly AI Insight</h3>
+             <p className="text-slate-600 font-medium leading-relaxed">{insight.message}</p>
+           </div>
+        </div>
+      )}
+
+      </div> {/* End print container */}
     </div>
   );
 }

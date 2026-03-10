@@ -15,6 +15,8 @@ import Subjects from './pages/Subjects';
 import Planner from './pages/Planner';
 import Pomodoro from './pages/Pomodoro';
 import CalendarView from './pages/CalendarView';
+import History from './pages/History';
+import NewTask from './pages/NewTask';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -48,7 +50,9 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="subjects" element={<Subjects />} />
           <Route path="planner" element={<Planner />} />
+          <Route path="planner/new" element={<NewTask />} />
           <Route path="pomodoro" element={<Pomodoro />} />
+          <Route path="history" element={<History />} />
           <Route path="calendar" element={<CalendarView />} />
         </Route>
       </Routes>

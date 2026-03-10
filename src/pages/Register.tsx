@@ -11,19 +11,23 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg('');
     try {
       const response = await api.post('/auth/register', { name, email, password });
       dispatch(setCredentials(response.data));
       toast.success('Account created! Welcome to Study Planner.');
       navigate('/');
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Registration failed');
+      const errorText = err.response?.data?.error || 'Registration failed';
+      setErrorMsg(errorText);
+      toast.error(errorText);
     } finally {
       setLoading(false);
     }
@@ -45,6 +49,13 @@ export default function Register() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 sm:shadow-lg sm:rounded-2xl sm:px-10 border-0 sm:border border-slate-100">
+          
+          {errorMsg && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium border border-red-100 mb-6 flex items-center justify-center text-center">
+              {errorMsg}
+            </div>
+          )}
+
           <form className="space-y-5" onSubmit={handleRegister}>
              <div>
                <label className="block text-sm font-semibold text-slate-700">Full Name</label>

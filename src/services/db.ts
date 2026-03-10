@@ -11,9 +11,16 @@ export interface Task {
   subjectId: string;
   topic: string;
   studyTime: number;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  dueDate: Date;
+  notes?: string;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  dueDate: string;
+  isCompleted: boolean;
   status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED';
+  note?: string; // Optional completion reason or notes
+  carriedOver?: boolean; // If this task was rolled over from a past date
+  startTime?: string;
+  endTime?: string;
+  isExtended?: boolean;
   offlineSyncState?: 'NEW' | 'MODIFIED' | 'DELETED'; // For background sync tracking
 }
 

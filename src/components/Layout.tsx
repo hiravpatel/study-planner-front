@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { logout } from '../store/authSlice';
-import { BookOpen, Calendar, Clock, LayoutDashboard, LogOut } from 'lucide-react';
+import { BookOpen, Calendar, Clock, LayoutDashboard, LogOut, History as HistoryIcon } from 'lucide-react';
 
 export default function Layout() {
   const dispatch = useDispatch();
@@ -70,6 +70,14 @@ export default function Layout() {
               <>
                 <Calendar className={desktopIconClasses({ isActive })} />
                 <span>Planner</span>
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/history" className={desktopNavLinkClasses}>
+            {({ isActive }) => (
+              <>
+                <HistoryIcon className={desktopIconClasses({ isActive })} />
+                <span>History</span>
               </>
             )}
           </NavLink>
@@ -152,6 +160,14 @@ export default function Layout() {
               <>
                 <Calendar className={mobileIconClasses({ isActive })} />
                 <span className="text-[10px] font-medium">Planner</span>
+              </>
+            )}
+          </NavLink>
+          <NavLink to="/history" className={mobileNavLinkClasses}>
+            {({ isActive }) => (
+              <>
+                <HistoryIcon className={mobileIconClasses({ isActive })} />
+                <span className="text-[10px] font-medium">History</span>
               </>
             )}
           </NavLink>
